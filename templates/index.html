@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NexaBank — Modern Banking</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #06080f;
+  --surface: #0d1120;
+  --card: #111827;
+  --border: rgba(255,255,255,0.06);
+  --gold: #d4a843;
+  --gold2: #f0c96a;
+  --text: #eef0f6;
+  --muted: #6b7280;
+  --soft: #9ca3af;
+  --green: #10b981;
+  --red: #ef4444;
+}
+html { scroll-behavior: smooth; }
+body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--text); overflow-x: hidden; }
+
+/* ─── Noise overlay ─── */
+body::after {
+  content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 999;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  opacity: 0.4;
+}
+
+/* ─── Glow blobs ─── */
+.blob { position: fixed; border-radius: 50%; filter: blur(100px); pointer-events: none; z-index: 0; }
+.blob-1 { width: 700px; height: 700px; background: radial-gradient(circle, rgba(212,168,67,0.07), transparent 70%); top: -200px; right: -150px; }
+.blob-2 { width: 500px; height: 500px; background: radial-gradient(circle, rgba(16,185,129,0.04), transparent 70%); bottom: 50px; left: -100px; }
+
+/* ─── NAV ─── */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 500;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 60px; height: 70px;
+  background: rgba(6,8,15,0.85); backdrop-filter: blur(24px);
+  border-bottom: 1px solid var(--border);
+}
+.logo { font-family: 'Playfair Display', serif; font-size: 24px; font-weight: 700; color: var(--text); cursor: pointer; }
+.logo em { color: var(--gold); font-style: normal; }
+.nav-links { display: flex; gap: 40px; }
+.nav-links a { text-decoration: none; color: var(--soft); font-size: 14px; font-weight: 400; transition: color .2s; }
+.nav-links a:hover { color: var(--text); }
+.nav-right { display: flex; gap: 10px; }
+
+/* ─── BUTTONS ─── */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 9px 22px; border-radius: 8px; font-size: 14px; font-weight: 500;
+  font-family: 'Outfit', sans-serif; cursor: pointer; border: none; transition: all .2s; text-decoration: none;
+}
+.btn-ghost { background: transparent; color: var(--soft); border: 1px solid rgba(255,255,255,0.1); }
+.btn-ghost:hover { color: var(--text); border-color: rgba(255,255,255,0.2); }
+.btn-gold { background: var(--gold); color: #06080f; font-weight: 600; }
+.btn-gold:hover { background: var(--gold2); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(212,168,67,0.35); }
+.btn-outline { background: transparent; color: var(--gold); border: 1px solid rgba(212,168,67,0.4); }
+.btn-outline:hover { background: rgba(212,168,67,0.08); border-color: var(--gold); }
+.btn-lg { padding: 14px 32px; font-size: 15px; border-radius: 10px; }
+.btn-full { width: 100%; padding: 13px; font-size: 15px; border-radius: 10px; }
+.btn-danger { background: rgba(239,68,68,0.12); color: #fca5a5; border: 1px solid rgba(239,68,68,0.2); }
+.btn-danger:hover { background: rgba(239,68,68,0.2); }
+
+/* ─── HERO ─── */
+.hero {
+  position: relative; z-index: 1; min-height: 100vh;
+  display: flex; align-items: center; padding: 100px 60px 60px;
+}
+.hero-inner { display: flex; align-items: center; gap: 80px; max-width: 1200px; margin: 0 auto; width: 100%; }
+.hero-text { flex: 1; }
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(212,168,67,0.08); border: 1px solid rgba(212,168,67,0.2);
+  padding: 6px 16px; border-radius: 100px; font-size: 12px; color: var(--gold);
+  font-weight: 500; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 30px;
+}
+.pulse { width: 6px; height: 6px; border-radius: 50%; background: var(--gold); animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(.8)} }
+h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(44px, 5.5vw, 78px); font-weight: 900;
+  line-height: 1.05; letter-spacing: -2px; margin-bottom: 24px;
+}
+h1 .gold { color: var(--gold); }
+.hero-sub { font-size: 17px; color: var(--soft); line-height: 1.75; max-width: 480px; margin-bottom: 42px; font-weight: 300; }
+.hero-actions { display: flex; gap: 14px; margin-bottom: 60px; flex-wrap: wrap; }
+.hero-divider { height: 1px; background: var(--border); margin-bottom: 32px; }
+.stats { display: flex; gap: 48px; }
+.stat-val { font-family: 'Playfair Display', serif; font-size: 30px; font-weight: 700; color: var(--text); }
+.stat-label { font-size: 12px; color: var(--muted); margin-top: 3px; letter-spacing: .5px; text-transform: uppercase; }
+
+/* ─── HERO CARD VISUAL ─── */
+.hero-visual { flex: 1; display: flex; justify-content: center; align-items: center; position: relative; }
+.cards-container { position: relative; width: 340px; height: 420px; }
+.vcard {
+  position: absolute; width: 310px; height: 190px; border-radius: 20px;
+  padding: 26px; display: flex; flex-direction: column; justify-content: space-between;
+  transition: transform .5s cubic-bezier(.4,0,.2,1);
+}
+.vcard-dark {
+  background: linear-gradient(135deg, #1a2035 0%, #0f1525 100%);
+  border: 1px solid rgba(212,168,67,0.25); top: 0; left: 30px;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.6); transform: rotate(-6deg);
+}
+.vcard-gold {
+  background: linear-gradient(135deg, var(--gold) 0%, #b8892a 100%);
+  top: 130px; left: 0; z-index: 2; transform: rotate(4deg);
+  box-shadow: 0 30px 80px rgba(212,168,67,0.25);
+}
+.cards-container:hover .vcard-dark { transform: rotate(-10deg) translateY(-12px); }
+.cards-container:hover .vcard-gold { transform: rotate(7deg) translateY(8px); }
+.chip { width: 38px; height: 28px; border-radius: 5px; }
+.vcard-dark .chip { background: linear-gradient(135deg, #d4a843, #9a7020); }
+.vcard-gold .chip { background: rgba(0,0,0,0.18); }
+.brand { font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 700; }
+.vcard-dark .brand { color: var(--gold); }
+.vcard-gold .brand { color: rgba(0,0,0,0.55); }
+.cnum { font-size: 14px; letter-spacing: 4px; font-weight: 300; }
+.vcard-dark .cnum { color: rgba(238,240,246,0.5); }
+.vcard-gold .cnum { color: rgba(0,0,0,0.45); }
+.cbot { display: flex; justify-content: space-between; align-items: flex-end; }
+.cname { font-size: 11px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; }
+.vcard-dark .cname { color: rgba(238,240,246,0.7); }
+.vcard-gold .cname { color: rgba(0,0,0,0.6); }
+.cexp { font-size: 10px; opacity: .6; margin-top: 3px; }
+.vcard-gold .cexp { color: rgba(0,0,0,.55); }
+
+/* Floating stats */
+.float-stat {
+  position: absolute; background: var(--card); border: 1px solid var(--border);
+  border-radius: 14px; padding: 12px 18px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+}
+.float-stat-1 { bottom: 30px; right: -20px; animation: float 3s ease-in-out infinite; }
+.float-stat-2 { top: 20px; left: -30px; animation: float 3s ease-in-out infinite .8s; }
+@keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+.fs-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 4px; }
+.fs-val { font-size: 18px; font-weight: 600; }
+.fs-val.green { color: var(--green); }
+.fs-val.gold { color: var(--gold); }
+
+/* ─── FEATURES SECTION ─── */
+.section { position: relative; z-index: 1; padding: 100px 60px; }
+.section-bg { background: var(--surface); }
+.section-tag { font-size: 11px; text-transform: uppercase; letter-spacing: 3px; color: var(--gold); font-weight: 600; text-align: center; margin-bottom: 14px; }
+.section-title { font-family: 'Playfair Display', serif; font-size: clamp(32px, 3vw, 50px); font-weight: 700; text-align: center; letter-spacing: -1px; margin-bottom: 64px; line-height: 1.15; }
+.features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; max-width: 1100px; margin: 0 auto; }
+.feat-card {
+  background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+  padding: 32px; position: relative; overflow: hidden;
+  transition: transform .3s, border-color .3s, box-shadow .3s;
+}
+.feat-card::after {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  opacity: 0; transition: opacity .3s;
+}
+.feat-card:hover { transform: translateY(-5px); border-color: rgba(212,168,67,0.15); box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+.feat-card:hover::after { opacity: 1; }
+.feat-icon { font-size: 28px; margin-bottom: 18px; }
+.feat-card h3 { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700; margin-bottom: 10px; }
+.feat-card p { font-size: 14px; color: var(--soft); line-height: 1.7; font-weight: 300; }
+
+/* ─── MODALS ─── */
+.overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.85);
+  backdrop-filter: blur(12px); z-index: 800;
+  display: none; align-items: center; justify-content: center; padding: 20px;
+}
+.overlay.open { display: flex; }
+.modal {
+  background: var(--card); border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 20px; width: 100%; max-width: 440px; padding: 40px;
+  position: relative; animation: modalIn .25s ease;
+}
+@keyframes modalIn { from{opacity:0;transform:translateY(16px) scale(.97)} to{opacity:1;transform:translateY(0) scale(1)} }
+.modal-x {
+  position: absolute; top: 14px; right: 14px;
+  background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+  color: var(--muted); width: 32px; height: 32px; border-radius: 8px;
+  font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: all .2s; font-family: inherit;
+}
+.modal-x:hover { background: rgba(255,255,255,0.08); color: var(--text); }
+.modal-logo { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700; margin-bottom: 6px; }
+.modal-logo em { color: var(--gold); font-style: normal; }
+.modal-sub { font-size: 14px; color: var(--soft); margin-bottom: 28px; font-weight: 300; }
+.form-group { margin-bottom: 16px; }
+.form-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+label { display: block; font-size: 12px; font-weight: 500; color: var(--soft); margin-bottom: 7px; letter-spacing: .4px; text-transform: uppercase; }
+input, select {
+  width: 100%; padding: 12px 14px; background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08); border-radius: 9px;
+  color: var(--text); font-size: 14px; font-family: 'Outfit', sans-serif;
+  outline: none; transition: all .2s;
+}
+input:focus, select:focus { border-color: var(--gold); background: rgba(212,168,67,0.04); box-shadow: 0 0 0 3px rgba(212,168,67,0.08); }
+input::placeholder { color: var(--muted); }
+select option { background: var(--card); }
+.modal-switch { text-align: center; margin-top: 18px; font-size: 13px; color: var(--soft); }
+.modal-switch a { color: var(--gold); cursor: pointer; font-weight: 500; }
+.modal-switch a:hover { text-decoration: underline; }
+.alert { padding: 11px 14px; border-radius: 9px; font-size: 13px; margin-bottom: 16px; display: none; }
+.alert.show { display: block; }
+.alert-err { background: rgba(239,68,68,0.09); border: 1px solid rgba(239,68,68,0.2); color: #fca5a5; }
+.alert-ok { background: rgba(16,185,129,0.09); border: 1px solid rgba(16,185,129,0.2); color: #6ee7b7; }
+.spin { display: none; width: 14px; height: 14px; border: 2px solid rgba(0,0,0,0.25); border-top-color: #06080f; border-radius: 50%; animation: rot .6s linear infinite; }
+.spin.show { display: inline-block; }
+@keyframes rot { to{ transform:rotate(360deg) } }
+
+/* ─── FOOTER ─── */
+footer { position: relative; z-index: 1; background: var(--bg); border-top: 1px solid var(--border); padding: 36px 60px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
+.footer-logo { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700; }
+.footer-logo em { color: var(--gold); font-style: normal; }
+.footer-copy { font-size: 13px; color: var(--muted); }
+
+@media(max-width:900px){
+  nav{padding:0 24px;}
+  .nav-links{display:none;}
+  .hero{padding:90px 24px 60px;}
+  .hero-inner{flex-direction:column; gap:40px;}
+  .hero-visual{width:100%;}
+  .section{padding:70px 24px;}
+  footer{padding:28px 24px;}
+}
+</style>
+</head>
+<body>
+
+<div class="blob blob-1"></div>
+<div class="blob blob-2"></div>
+
+<!-- NAV -->
+<nav>
+  <div class="logo">Nexa<em>Bank</em></div>
+  <div class="nav-links">
+    <a href="#features">Features</a>
+    <a href="#security">Security</a>
+    <a href="#">About</a>
+  </div>
+  <div class="nav-right">
+    <button class="btn btn-ghost" onclick="openModal('login')">Sign In</button>
+    <button class="btn btn-gold" onclick="openModal('register')">Open Account</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-text">
+      <div class="hero-badge"><div class="pulse"></div> Next-Gen Banking</div>
+      <h1>Banking Built<br>for the <span class="gold">Digital Age</span></h1>
+      <p class="hero-sub">Send money instantly, track spending intelligently, and grow your wealth — all from one beautifully designed platform.</p>
+      <div class="hero-actions">
+        <button class="btn btn-gold btn-lg" onclick="openModal('register')">Open Free Account</button>
+        <button class="btn btn-ghost btn-lg" onclick="openModal('login')">Sign In →</button>
+      </div>
+      <div class="hero-divider"></div>
+      <div class="stats">
+        <div><div class="stat-val">250K+</div><div class="stat-label">Active Users</div></div>
+        <div><div class="stat-val">$2.4B</div><div class="stat-label">Daily Volume</div></div>
+        <div><div class="stat-val">99.9%</div><div class="stat-label">Uptime</div></div>
+      </div>
+    </div>
+
+    <div class="hero-visual">
+      <div class="cards-container">
+        <div class="float-stat float-stat-2">
+          <div class="fs-label">Balance</div>
+          <div class="fs-val gold">$12,480.00</div>
+        </div>
+        <div class="vcard vcard-dark">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start">
+            <div class="chip"></div>
+            <div class="brand">NEXA</div>
+          </div>
+          <div class="cnum">4521 •••• •••• 3847</div>
+          <div class="cbot">
+            <div><div class="cname">J. Anderson</div><div class="cexp">Exp 09/28</div></div>
+          </div>
+        </div>
+        <div class="vcard vcard-gold">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start">
+            <div class="chip"></div>
+            <div class="brand">NEXA</div>
+          </div>
+          <div class="cnum">8834 •••• •••• 1290</div>
+          <div class="cbot">
+            <div><div class="cname">S. Chen</div><div class="cexp">Exp 12/27</div></div>
+          </div>
+        </div>
+        <div class="float-stat float-stat-1">
+          <div class="fs-label">Last Transfer</div>
+          <div class="fs-val green">+$1,200.00</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="section section-bg" id="features">
+  <div class="section-tag">Why NexaBank</div>
+  <h2 class="section-title">Everything you need,<br>nothing you don't.</h2>
+  <div class="features-grid">
+    <div class="feat-card"><div class="feat-icon">⚡</div><h3>Instant Transfers</h3><p>Send money to anyone in seconds. Real-time processing with zero hidden fees and complete transaction history.</p></div>
+    <div class="feat-card"><div class="feat-icon">📊</div><h3>Smart Analytics</h3><p>Beautiful charts and spending breakdowns help you understand where your money goes every month.</p></div>
+    <div class="feat-card"><div class="feat-icon">🔒</div><h3>Bank-Grade Security</h3><p>256-bit encryption, hashed passwords, and secure session management protect every transaction you make.</p></div>
+    <div class="feat-card"><div class="feat-icon">💰</div><h3>Savings Vault</h3><p>Move funds between checking and savings with a single click. Watch your goals take shape automatically.</p></div>
+    <div class="feat-card"><div class="feat-icon">🕐</div><h3>Always Available</h3><p>Access your account from any device, any time. Your bank never sleeps, and neither does your money.</p></div>
+    <div class="feat-card"><div class="feat-icon">🎁</div><h3>$1,000 Welcome Gift</h3><p>Every new account starts with $1,000 credited instantly. No conditions, no fine print, no catch.</p></div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">Nexa<em>Bank</em></div>
+  <div class="footer-copy">© 2024 NexaBank. FDIC Insured. All rights reserved.</div>
+</footer>
+
+<!-- LOGIN MODAL -->
+<div class="overlay" id="loginOverlay">
+  <div class="modal">
+    <button class="modal-x" onclick="closeModal('login')">✕</button>
+    <div class="modal-logo">Nexa<em>Bank</em></div>
+    <p class="modal-sub">Welcome back. Sign in to continue.</p>
+    <div class="alert alert-err" id="loginErr"></div>
+    <div class="alert alert-ok" id="loginOk"></div>
+    <form onsubmit="handleLogin(event)" autocomplete="on">
+      <div class="form-group">
+        <label>Email Address</label>
+        <input type="email" id="lEmail" placeholder="you@example.com" required autocomplete="email">
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="lPass" placeholder="••••••••" required autocomplete="current-password">
+      </div>
+      <button type="submit" class="btn btn-gold btn-full" id="lBtn">
+        <span class="spin" id="lSpin"></span>
+        <span id="lTxt">Sign In</span>
+      </button>
+    </form>
+    <div class="modal-switch">No account? <a onclick="switchModal('login','register')">Create one →</a></div>
+  </div>
+</div>
+
+<!-- REGISTER MODAL -->
+<div class="overlay" id="registerOverlay">
+  <div class="modal">
+    <button class="modal-x" onclick="closeModal('register')">✕</button>
+    <div class="modal-logo">Nexa<em>Bank</em></div>
+    <p class="modal-sub">Join 250,000+ people who bank smarter.</p>
+    <div class="alert alert-err" id="regErr"></div>
+    <div class="alert alert-ok" id="regOk"></div>
+    <form onsubmit="handleRegister(event)" autocomplete="on">
+      <div class="form-row2">
+        <div class="form-group">
+          <label>Full Name</label>
+          <input type="text" id="rName" placeholder="Jane Doe" required autocomplete="name">
+        </div>
+        <div class="form-group">
+          <label>Phone</label>
+          <input type="tel" id="rPhone" placeholder="+1 555 0000" required autocomplete="tel">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Email Address</label>
+        <input type="email" id="rEmail" placeholder="you@example.com" required autocomplete="email">
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="rPass" placeholder="Min. 6 characters" required minlength="6" autocomplete="new-password">
+      </div>
+      <button type="submit" class="btn btn-gold btn-full" id="rBtn">
+        <span class="spin" id="rSpin"></span>
+        <span id="rTxt">Create Account</span>
+      </button>
+    </form>
+    <div class="modal-switch">Already have an account? <a onclick="switchModal('register','login')">Sign in →</a></div>
+  </div>
+</div>
+
+<script>
+function openModal(name){document.getElementById(name+'Overlay').classList.add('open');document.body.style.overflow='hidden';}
+function closeModal(name){document.getElementById(name+'Overlay').classList.remove('open');document.body.style.overflow='';}
+function switchModal(from,to){closeModal(from);setTimeout(()=>openModal(to),150);}
+document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open'),document.body.style.overflow='';}));
+
+function setLoading(btn,spin,txt,on,label=''){
+  btn.disabled=on;
+  document.getElementById(spin).classList.toggle('show',on);
+  document.getElementById(txt).textContent=on?'':label;
+}
+function showAlert(id,msg){const el=document.getElementById(id);el.textContent=msg;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),5000);}
+
+async function handleLogin(e){
+  e.preventDefault();
+  setLoading(document.getElementById('lBtn'),'lSpin','lTxt',true);
+  try{
+    const r=await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:document.getElementById('lEmail').value,password:document.getElementById('lPass').value})});
+    const d=await r.json();
+    if(d.success){showAlert('loginOk','Welcome back! Redirecting...');setTimeout(()=>window.location='/dashboard',1000);}
+    else{showAlert('loginErr',d.message);setLoading(document.getElementById('lBtn'),'lSpin','lTxt',false);document.getElementById('lTxt').textContent='Sign In';}
+  }catch{showAlert('loginErr','Network error. Try again.');setLoading(document.getElementById('lBtn'),'lSpin','lTxt',false);document.getElementById('lTxt').textContent='Sign In';}
+}
+
+async function handleRegister(e){
+  e.preventDefault();
+  setLoading(document.getElementById('rBtn'),'rSpin','rTxt',true);
+  try{
+    const r=await fetch('/api/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:document.getElementById('rName').value,phone:document.getElementById('rPhone').value,email:document.getElementById('rEmail').value,password:document.getElementById('rPass').value})});
+    const d=await r.json();
+    if(d.success){showAlert('regOk','Account created! Redirecting...');setTimeout(()=>window.location='/dashboard',1000);}
+    else{showAlert('regErr',d.message);setLoading(document.getElementById('rBtn'),'rSpin','rTxt',false);document.getElementById('rTxt').textContent='Create Account';}
+  }catch{showAlert('regErr','Network error. Try again.');setLoading(document.getElementById('rBtn'),'rSpin','rTxt',false);document.getElementById('rTxt').textContent='Create Account';}
+}
+</script>
+</body>
+</html>
